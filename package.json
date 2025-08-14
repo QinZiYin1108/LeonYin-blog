@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@kangc/v-md-editor": "^2.3.18",
+    "prismjs": "^1.30.0"
+  }
+}

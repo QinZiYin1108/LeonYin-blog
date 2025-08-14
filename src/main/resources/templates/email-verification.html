@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>邮箱验证码 - LeonYin Blog</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #0b1220; color: #e6f0ff; }
+        .wrap { max-width: 640px; margin: 24px auto; padding: 0 16px; }
+        .card { background: linear-gradient(180deg, rgba(17,35,64,0.9), rgba(10,20,38,0.9)); border: 1px solid rgba(74,144,226,0.15); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(6,19,41,0.6);
+            backdrop-filter: blur(6px); }
+        .header { background: radial-gradient(1200px 400px at 20% -20%, rgba(0,133,255,0.35) 0%, rgba(0,51,153,0.08) 60%, rgba(0,0,0,0) 100%); padding: 28px 28px 10px; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #0ea5ff, #6b8cff); box-shadow: 0 6px 18px rgba(14,165,255,0.5); }
+        .brand h1 { font-size: 18px; margin: 0; letter-spacing: 0.5px; font-weight: 600; color: #d7e9ff; }
+        .content { padding: 22px 28px 28px; }
+        .title { margin: 8px 0 14px; font-size: 20px; font-weight: 600; color: #eaf3ff; }
+        .desc { line-height: 1.8; color: #b9d2ff; }
+        .code { margin: 22px 0; padding: 18px 22px; border-radius: 12px; background: rgba(16,43,84,0.65); border: 1px solid rgba(82,156,255,0.25); letter-spacing: 2px; font-size: 28px; font-weight: 700; color: #ffffff; text-align: center; box-shadow: inset 0 0 0 1px rgba(0,153,255,0.1), 0 6px 20px rgba(0,64,128,0.35); }
+        .meta { margin-top: 14px; font-size: 12px; color: #8fb3ff; }
+        .divider { height: 1px; background: linear-gradient(90deg, rgba(0,153,255,0) 0%, rgba(0,153,255,0.35) 50%, rgba(0,153,255,0) 100%); margin: 18px 0; }
+        .footer { padding: 0 28px 26px; font-size: 12px; color: #89a7d9; }
+        .link { color: #6fb6ff; text-decoration: none; }
+        @media (prefers-color-scheme: light) {
+            body { background: #f6faff; color: #19324d; }
+            .card { background: #ffffff; border: 1px solid rgba(0,106,255,0.08); box-shadow: 0 6px 20px rgba(9,55,125,0.06); }
+            .header { background: linear-gradient(180deg, rgba(234,245,255,0.85), rgba(247,251,255,0.65)); }
+            .brand h1 { color: #0f2440; }
+            .desc { color: #2d4666; }
+            .code { background: #0d2a52; color: #ffffff; }
+            .meta { color: #365780; }
+            .footer { color: #3a5a80; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <div class="brand">
+                <div class="logo"></div>
+                <h1>LeonYin 个人博客</h1>
+            </div>
+        </div>
+        <div class="content">
+            <div class="title">邮箱验证码</div>
+            <p class="desc">您好！我们收到一个关于此邮箱的操作请求。为了确认是您本人操作，请在页面输入以下验证码：</p>
+            <div class="code">[[${verificationCode}]]</div>
+            <p class="desc">为保障您的账号安全，请勿将验证码透露给任何人。该验证码有效期为 <strong>[[${expireMinutes}]] 分钟</strong>，过期请重新获取。</p>
+            <div class="divider"></div>
+            <div class="meta">如果这不是您的操作，请忽略本邮件。如有疑问，请联系站点管理员。</div>
+        </div>
+        <div class="footer">
+            <div>本邮件由系统自动发送，请勿直接回复。如需帮助，请访问 <a class="link" href="https://example.com">帮助中心</a>。</div>
+        </div>
+    </div>
+    
+    <div style="text-align:center;margin-top:16px;color:#6d89b3;font-size:12px;">© [[${#dates.format(#dates.createNow(),'yyyy') }]] LeonYin Blog</div>
+    
+</div>
+</body>
+</html>
+ 
+ 
