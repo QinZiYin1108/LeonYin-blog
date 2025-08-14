@@ -1,0 +1,135 @@
+rate-limit:
+  default:
+    capacity: ${RATE_LIMIT_CAPACITY:50}
+    rate-per-second: ${RATE_LIMIT_RPS:5.0}
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/api}
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:leon-blog-backend}
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+
+  # 解决Swagger路径匹配问题
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # 数据库配置（使用环境变量注入）
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:leon_blog}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:}
+
+  # Redis配置（使用环境变量注入）
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: ${REDIS_TIMEOUT:6000ms}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:10}
+          max-wait: ${REDIS_POOL_MAX_WAIT:-1ms}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
+          min-idle: ${REDIS_POOL_MIN_IDLE:0}
+
+  # 邮件配置（使用环境变量注入）
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: ${FILE_MAX_SIZE:10MB}
+      max-request-size: ${FILE_MAX_REQUEST_SIZE:10MB}
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: input
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# JWT配置（使用环境变量注入）
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: ${JWT_EXPIRATION:86400000} # 24小时
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7天
+
+# 阿里云OSS配置（使用环境变量注入）
+aliyun:
+  oss:
+    endpoint: ${ALIYUN_OSS_ENDPOINT:}
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+    bucket-name: ${ALIYUN_OSS_BUCKET_NAME:}
+    url-prefix: ${ALIYUN_OSS_URL_PREFIX:}
+
+# 业务配置
+blog:
+  # 热度计算权重配置
+  hot-score:
+    view-weight: ${BLOG_HOT_VIEW_WEIGHT:1.0}
+    like-weight: ${BLOG_HOT_LIKE_WEIGHT:2.0}
+    comment-weight: ${BLOG_HOT_COMMENT_WEIGHT:3.0}
+    collect-weight: ${BLOG_HOT_COLLECT_WEIGHT:4.0}
+    time-decay-factor: ${BLOG_HOT_TIME_DECAY:0.1}
+
+  # 验证码配置
+  verification:
+    code-length: ${VERIFICATION_CODE_LENGTH:6}
+    expire-minutes: ${VERIFICATION_EXPIRE_MINUTES:5}
+    max-attempts: ${VERIFICATION_MAX_ATTEMPTS:5}
+
+  # 限流配置
+  rate-limit:
+    enable: ${BLOG_RATE_LIMIT_ENABLE:true}
+    capacity: ${BLOG_RATE_LIMIT_CAPACITY:100}
+    refill-tokens: ${BLOG_RATE_LIMIT_REFILL_TOKENS:10}
+    refill-period: ${BLOG_RATE_LIMIT_REFILL_PERIOD:60}
+
+# Knife4j配置
+knife4j:
+  enable: ${KNIFE4J_ENABLE:true}
+  setting:
+    language: zh_cn
+    enable-version: true
+    enable-home-custom: true
+    home-custom-path: classpath:markdown/home.md
+  production: ${KNIFE4J_PRODUCTION:false}
+  basic:
+    enable: ${KNIFE4J_BASIC_ENABLE:false}
+
+logging:
+  level:
+    com.example.backend: ${LOG_LEVEL_BACKEND:DEBUG}
+    org.springframework.security: ${LOG_LEVEL_SECURITY:DEBUG}
+    com.baomidou.mybatisplus: ${LOG_LEVEL_MYBATIS:DEBUG}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+
