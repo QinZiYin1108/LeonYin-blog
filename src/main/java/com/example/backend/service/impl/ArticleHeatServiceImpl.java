@@ -13,14 +13,16 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class ArticleHeatServiceImpl extends ServiceImpl<ArticleHeatMapper, ArticleHeat> implements ArticleHeatService {
 
-    private static final String KEY_VIEW = "article:heat:view:";      // +articleId -> long
-    private static final String KEY_LIKE = "article:heat:like:";      // +articleId -> long
-    private static final String KEY_COLLECT = "article:heat:collect:";// +articleId -> long
-    private static final String KEY_SCORE = "article:heat:score:";    // +articleId -> double (缓存计算)
+    private static final String KEY_VIEW = "article:heat:view:";        // +articleId -> long
+    private static final String KEY_LIKE = "article:heat:like:";        // +articleId -> long
+    private static final String KEY_COLLECT = "article:heat:collect:";  // +articleId -> long
+    private static final String KEY_SCORE = "article:heat:score:";      // +articleId -> double (缓存计算)
+    private static final String KEY_DIRTY_SET = "article:heat:dirty";   // Set(articleId)
 
     @Autowired
     private StringRedisTemplate redis;
@@ -38,18 +40,21 @@ public class ArticleHeatServiceImpl extends ServiceImpl<ArticleHeatMapper, Artic
     public void incrView(String articleId, long delta) {
         redis.opsForValue().increment(KEY_VIEW + articleId, delta);
         redis.expire(KEY_VIEW + articleId, Duration.ofDays(2));
+        redis.opsForSet().add(KEY_DIRTY_SET, articleId);
     }
 
     @Override
     public void incrLike(String articleId, long delta) {
         redis.opsForValue().increment(KEY_LIKE + articleId, delta);
         redis.expire(KEY_LIKE + articleId, Duration.ofDays(7));
+        redis.opsForSet().add(KEY_DIRTY_SET, articleId);
     }
 
     @Override
     public void incrCollect(String articleId, long delta) {
         redis.opsForValue().increment(KEY_COLLECT + articleId, delta);
         redis.expire(KEY_COLLECT + articleId, Duration.ofDays(7));
+        redis.opsForSet().add(KEY_DIRTY_SET, articleId);
     }
 
     /**
@@ -57,11 +62,11 @@ public class ArticleHeatServiceImpl extends ServiceImpl<ArticleHeatMapper, Artic
      */
     @Override
     public void flushToDatabase() {
-        // 简化：扫描可能存在的key集合（实际生产建议结合文章列表或ZSET管理）
-        Set<String> viewKeys = redis.keys(KEY_VIEW + "*");
-        if (viewKeys == null) return;
-        for (String key : viewKeys) {
-            String articleId = key.substring(KEY_VIEW.length());
+        // 使用脏集合避免 KEYS 扫描
+        Set<String> ids = redis.opsForSet().members(KEY_DIRTY_SET);
+        if (ids == null || ids.isEmpty()) return;
+
+        for (String articleId : ids) {
             long views = parseLong(redis.opsForValue().get(KEY_VIEW + articleId));
             long likes = parseLong(redis.opsForValue().get(KEY_LIKE + articleId));
             long collects = parseLong(redis.opsForValue().get(KEY_COLLECT + articleId));
@@ -89,10 +94,12 @@ public class ArticleHeatServiceImpl extends ServiceImpl<ArticleHeatMapper, Artic
             heat.setHotScore(BigDecimal.valueOf(score));
             updateById(heat);
 
-            // 清理已合并的增量（也可改为减去对应增量保留过期策略）
-            redis.delete(KEY_VIEW + articleId);
-            redis.delete(KEY_LIKE + articleId);
-            redis.delete(KEY_COLLECT + articleId);
+            // 清理已合并的增量（也可改为减去对应增量以保留过期策略）
+            if (views != 0L) redis.delete(KEY_VIEW + articleId);
+            if (likes != 0L) redis.delete(KEY_LIKE + articleId);
+            if (collects != 0L) redis.delete(KEY_COLLECT + articleId);
+            // 从脏集合移除
+            redis.opsForSet().remove(KEY_DIRTY_SET, articleId);
         }
     }
 

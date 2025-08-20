@@ -32,6 +32,15 @@ public class ArticleController {
     @Autowired
     private com.example.backend.service.ArticleHeatService articleHeatService;
 
+    @Autowired
+    private com.example.backend.service.UserProfileService userProfileService;
+
+    @Autowired
+    private com.example.backend.service.CategoryService categoryService;
+
+    @Autowired
+    private com.example.backend.service.UserAccountService userAccountService;
+
     @ApiOperation("文章详情（登录浏览计入浏览量）")
     @GetMapping("/{articleId}")
     @RateLimit(capacity = 150, ratePerSecond = 30.0, key = "#{ip}:/article/detail")
@@ -107,7 +116,11 @@ public class ArticleController {
         try {
             String userId = extractUserId(request);
             boolean success = articleService.likeArticle(articleId, userId);
-            return success ? Result.success() : Result.error("已点赞");
+            if (success) {
+                userAccountService.recordUserLog(userId, "点赞文章", "articleId=" + articleId, getClientIpAddress(request));
+                return Result.success();
+            }
+            return Result.error("已点赞");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -119,7 +132,11 @@ public class ArticleController {
         try {
             String userId = extractUserId(request);
             boolean success = articleService.unlikeArticle(articleId, userId);
-            return success ? Result.success() : Result.error("未点赞");
+            if (success) {
+                userAccountService.recordUserLog(userId, "取消点赞", "articleId=" + articleId, getClientIpAddress(request));
+                return Result.success();
+            }
+            return Result.error("未点赞");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -131,7 +148,11 @@ public class ArticleController {
         try {
             String userId = extractUserId(request);
             boolean success = articleService.collectArticle(articleId, userId);
-            return success ? Result.success() : Result.error("已收藏");
+            if (success) {
+                userAccountService.recordUserLog(userId, "收藏文章", "articleId=" + articleId, getClientIpAddress(request));
+                return Result.success();
+            }
+            return Result.error("已收藏");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -143,7 +164,11 @@ public class ArticleController {
         try {
             String userId = extractUserId(request);
             boolean success = articleService.uncollectArticle(articleId, userId);
-            return success ? Result.success() : Result.error("未收藏");
+            if (success) {
+                userAccountService.recordUserLog(userId, "取消收藏", "articleId=" + articleId, getClientIpAddress(request));
+                return Result.success();
+            }
+            return Result.error("未收藏");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -156,6 +181,18 @@ public class ArticleController {
             return jwtUtil.getUserIdFromToken(token);
         }
         throw new RuntimeException("未登录");
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
 
     private ArticleVO toVO(Article a) {
@@ -176,6 +213,47 @@ public class ArticleController {
         vo.setStatus(a.getStatus());
         vo.setIsTop(a.getIsTop());
         vo.setPublishTime(a.getPublishTime());
+
+        // 作者昵称
+        try {
+            if (a.getAuthorId() != null) {
+                com.example.backend.entity.UserProfile up = userProfileService.getByUserAccountId(a.getAuthorId());
+                if (up != null && up.getNickname() != null && up.getNickname().trim().length() > 0) {
+                    vo.setAuthorName(up.getNickname());
+                } else {
+                    vo.setAuthorName("匿名作者");
+                }
+            }
+        } catch (Exception ignore) {}
+
+        // 分类名称
+        try {
+            if (a.getCategoryId() != null) {
+                com.example.backend.entity.Category cat = categoryService.getById(a.getCategoryId());
+                if (cat != null) {
+                    vo.setCategoryName(cat.getName());
+                }
+            }
+        } catch (Exception ignore) {}
+
+        // 标签列表
+        try {
+            if (a.getTags() != null && a.getTags().trim().length() > 0) {
+                String t = a.getTags().trim();
+                java.util.List<String> tagList;
+                if (t.startsWith("[") && t.endsWith("]")) {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    tagList = mapper.readValue(t, mapper.getTypeFactory().constructCollectionType(java.util.List.class, String.class));
+                } else {
+                    tagList = new java.util.ArrayList<>();
+                    for (String s : t.split(",")) {
+                        String v = s.trim();
+                        if (v.length() > 0) tagList.add(v);
+                    }
+                }
+                vo.setTagList(tagList);
+            }
+        } catch (Exception ignore) {}
         return vo;
     }
 }

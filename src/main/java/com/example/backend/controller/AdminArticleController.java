@@ -26,6 +26,9 @@ public class AdminArticleController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private com.example.backend.service.SystemConfigService systemConfigService;
+
     @ApiOperation("发布文章")
     @PostMapping
     @RateLimit(capacity = 20, ratePerSecond = 2.0, key = "#{ip}:/admin/article/create")
@@ -44,7 +47,13 @@ public class AdminArticleController {
             article.setTitle(req.getTitle());
             article.setSummary(req.getSummary());
             article.setContent(req.getContent());
-            article.setCoverImageId(req.getCoverImageId());
+            // 封面可选：若未提供，则尝试使用系统配置中的默认封面
+            String coverId = req.getCoverImageId();
+            if (coverId == null || coverId.trim().isEmpty()) {
+                com.example.backend.entity.SystemConfig cfg = systemConfigService.getByKey("default_cover_image_id");
+                coverId = (cfg != null) ? cfg.getConfigValue() : null;
+            }
+            article.setCoverImageId(coverId);
             article.setCategoryId(req.getCategoryId());
             article.setTags(req.getTags());
             return Result.success(articleService.publishArticle(article));
@@ -63,7 +72,13 @@ public class AdminArticleController {
             article.setTitle(req.getTitle());
             article.setSummary(req.getSummary());
             article.setContent(req.getContent());
-            article.setCoverImageId(req.getCoverImageId());
+            // 更新时封面也可为空：为空则保留原值或使用默认
+            String coverId2 = req.getCoverImageId();
+            if (coverId2 == null || coverId2.trim().isEmpty()) {
+                // 不设置字段意味着不修改；若明确需要清空可在前端传递特殊标识，这里暂保持不变
+            } else {
+                article.setCoverImageId(coverId2);
+            }
             article.setCategoryId(req.getCategoryId());
             article.setTags(req.getTags());
             article.setStatus(req.getStatus());

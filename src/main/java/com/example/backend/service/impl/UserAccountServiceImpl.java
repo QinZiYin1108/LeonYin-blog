@@ -55,6 +55,9 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
     private JwtUtil jwtUtil;
     
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Autowired
+    private com.example.backend.service.IpGeoService ipGeoService;
     
     @Override
     @Transactional
@@ -156,8 +159,10 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         // 6. 获取用户完整信息
         Object userInfo = userProfileService.getFullUserInfo(userAccount.getId());
         
-        // 7. 记录登录日志
-        userLogService.recordLog(userAccount.getId(), "邮箱验证码登录", "登录成功", clientIp);
+        // 7. 记录登录日志（含IP归属地）
+        String loc = ipGeoService.resolveLocation(clientIp);
+        String detail = loc == null ? "登录成功" : ("登录成功, 地理位置:" + loc);
+        userLogService.recordLog(userAccount.getId(), "邮箱验证码登录", detail, clientIp);
         
         return new LoginResponse(token, userInfo, false, "登录成功");
     }
@@ -210,8 +215,10 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         // 7. 获取用户完整信息
         Object userInfo = userProfileService.getFullUserInfo(userAccount.getId());
         
-        // 8. 记录登录日志
-        userLogService.recordLog(userAccount.getId(), "邮箱密码登录", "登录成功", clientIp);
+        // 8. 记录登录日志（含IP归属地）
+        String loc2 = ipGeoService.resolveLocation(clientIp);
+        String detail2 = loc2 == null ? "登录成功" : ("登录成功, 地理位置:" + loc2);
+        userLogService.recordLog(userAccount.getId(), "邮箱密码登录", detail2, clientIp);
         
         return new LoginResponse(token, userInfo, false, "登录成功");
     }
