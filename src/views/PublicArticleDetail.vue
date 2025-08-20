@@ -7,7 +7,6 @@
       <div class="meta">
         <span>作者：{{ article.authorName || '-' }}</span>
         <span>分类：{{ article.categoryName || '-' }}</span>
-        <span>热度：{{ article.hotScore ?? '-' }}</span>
         <span>点赞：{{ likeCount }}</span>
         <span>收藏：{{ collectCount }}</span>
         <span>发布时间：{{ formatTime(article.publishTime) }}</span>

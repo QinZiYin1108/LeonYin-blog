@@ -11,7 +11,6 @@
           <p class="summary">{{ it.summary }}</p>
           <div class="meta">
             <span>分类: {{ it.categoryName || categoryNameMap[it.categoryId] || '-' }}</span>
-            <span>热度: {{ it.hotScore ?? '-' }}</span>
             <span>点赞: {{ it.likeCount ?? 0 }}</span>
             <span>收藏: {{ it.collectCount ?? 0 }}</span>
             <span>发布时间: {{ formatTime(it.publishTime) }}</span>
