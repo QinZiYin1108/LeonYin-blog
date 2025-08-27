@@ -12,6 +12,10 @@
         <span>发布时间：{{ formatTime(article.publishTime) }}</span>
       </div>
       
+      <div class="tags" v-if="article.tagList && article.tagList.length > 0">
+        <el-tag v-for="tag in article.tagList" :key="tag" size="small" class="tag">{{ tag }}</el-tag>
+      </div>
+      
       <div class="content" v-html="article.content"></div>
 
       <div class="actions">
@@ -119,7 +123,9 @@ export default {
 .title { margin: 0 0 6px; }
 .meta { color: #999; font-size: 12px; display:flex; gap:12px; margin-bottom: 8px; }
 .cover img { max-width: 100%; border-radius: 4px; margin: 8px 0; }
-.content { margin-top: 8px; }
+.tags { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { margin-right: 5px; }
+.content { margin-top: 16px; }
 .actions { display:flex; gap:8px; margin-top: 12px; }
 </style>
 

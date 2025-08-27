@@ -19,7 +19,7 @@ export default {
   data() {
     return {
       year: new Date().getFullYear(),
-      miitUrl: 'https://beian.miit.gov.cn/'
+      miitUrl: 'https://beian.miit.gov.cn'
     }
   },
   computed: {

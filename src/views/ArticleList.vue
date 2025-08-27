@@ -15,6 +15,9 @@
             <span>收藏: {{ it.collectCount ?? 0 }}</span>
             <span>发布时间: {{ formatTime(it.publishTime) }}</span>
           </div>
+          <div class="tags" v-if="it.tagList && it.tagList.length > 0">
+            <el-tag v-for="tag in it.tagList" :key="tag" size="small" class="tag">{{ tag }}</el-tag>
+          </div>
         </li>
       </ul>
       <div class="pager">
@@ -102,6 +105,8 @@ export default {
 .title { margin: 0; }
 .summary { color: #666; font-size: 14px; }
 .meta { color: #999; font-size: 12px; display: flex; gap: 16px; }
+.tags { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { margin-right: 4px; }
 .pager { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: auto; padding-top: 16px; }
 </style>
 

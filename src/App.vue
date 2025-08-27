@@ -12,6 +12,7 @@
       <el-footer class="footer-wrap">
         <SiteFooter />
       </el-footer>
+      <SocialContact />
     </template>
   </el-container>
 </template>
@@ -19,10 +20,11 @@
 <script>
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
+import SocialContact from './components/SocialContact.vue'
 
 export default {
   name: 'App',
-  components: { SiteHeader, SiteFooter },
+  components: { SiteHeader, SiteFooter, SocialContact },
   computed: {
     isAdmin() {
       return this.$route.path.startsWith('/admin')
